@@ -1,0 +1,17 @@
+name: VLESS basic check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Test workflow
+        run: |
+          echo "ربات با موفقیت اجرا شد."
+          echo "اگر این مرحله سبز شد، مرحله بعد تست واقعی VLESS را اضافه می‌کنیم."
