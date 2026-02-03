@@ -1,17 +1,44 @@
-name: VLESS basic check
+name: VLESS Checker
 
 on:
   workflow_dispatch:
 
 jobs:
-  test-run:
+  check-vless:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Test workflow
+      - name: Install dependencies
         run: |
-          echo "ربات با موفقیت اجرا شد."
-          echo "اگر این مرحله سبز شد، مرحله بعد تست واقعی VLESS را اضافه می‌کنیم."
+          sudo apt update
+          sudo apt install -y curl jq
+
+      - name: Create output files
+        run: |
+          touch alive.txt
+          touch dead.txt
+
+      - name: Test VLESS configs
+        run: |
+          while IFS= read -r line; do
+            echo "Testing: $line"
+            proxy_url=$(echo "$line" | sed 's/vless:\/\//https:\/\//')
+            if curl -x "$proxy_url" -I -m 5 https://www.google.com >/dev/null 2>&1; then
+              echo "$line" >> alive.txt
+              echo "OK"
+            else
+              echo "$line" >> dead.txt
+              echo "BAD"
+            fi
+          done < all_configs.txt
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: vless-results
+          path: |
+            alive.txt
+            dead.txt
