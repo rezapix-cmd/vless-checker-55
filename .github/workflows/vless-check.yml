@@ -1,50 +1,87 @@
-name: VLESS Reality Checker
+name: Auto VLESS Reality Prioritizer
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 */6 * * *'
   workflow_dispatch:
 
 jobs:
-  check-configs:
+  build:
     runs-on: ubuntu-latest
-    # اضافه کردن دسترسی برای نوشتن در مخزن
     permissions:
       contents: write
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4 # استفاده از آخرین نسخه
+        uses: actions/checkout@v4
 
       - name: Set up Environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y curl
+          sudo apt-get install -y curl netcat-openbsd
           mkdir -p configs
-          touch all_configs.txt # جلوگیری از خطا در صورت خالی بودن فایل
 
-      - name: Run checker
+      - name: Fetch & Merge Configs
         run: |
-          # پاک کردن فایل‌های قدیمی برای جلوگیری از تکرار
-          > configs/alive.txt
-          > configs/dead.txt
+          # لیست منابع (اضافه کردن منابع عمومی برای پروتکل‌های مختلف)
+          SOURCES=(
+            "https://raw.githubusercontent.com/MatinGhanbari/v2ray-configs/main/subscriptions/vless/reality"
+            "https://raw.githubusercontent.com/barry-far/V2ray-Config/main/Sub1.txt"
+            "https://raw.githubusercontent.com/10ium/free-sub-link/main/config-fetcher/vless"
+            "https://raw.githubusercontent.com/Iranian-V2Ray/V2Ray-Configs/main/All_Configs_Sub.txt"
+          )
           
-          while IFS= read -r line || [ -n "$line" ]; do
-            [[ -z "$line" ]] && continue # نادیده گرفتن خطوط خالی
-            
-            # نکته: این فقط در دسترس بودن سرور را چک می‌کند نه کارکرد VLESS را
-            # برای تست واقعی باید از ابزار مخصوص استفاده شود
-            if curl -Is --connect-timeout 5 "$line" > /dev/null 2>&1; then
-              echo "$line" >> configs/alive.txt
-            else
-              echo "$line" >> configs/dead.txt
-            fi
-          done < all_configs.txt
+          > all_configs.txt
+          for url in "${SOURCES[@]}"; do
+            curl -s --max-time 10 "$url" >> all_configs.txt || true
+          done
+          
+          # تمیزکاری: حذف تکراری‌ها و فقط نگه داشتن پروتکل‌های استاندارد
+          grep -E "vless://|vmess://|trojan://|ss://" all_configs.txt | sort -u > temp.txt && mv temp.txt all_configs.txt
+
+      - name: Priority Quality Check (Reality First)
+        run: |
+          > configs/alive.txt
+          COUNT=0
+          MAX_CONFIGS=100
+          
+          # جدا سازی لینک‌ها: اول ریالیتی‌ها، بعد بقیه
+          grep -i "reality" all_configs.txt > reality_list.txt || touch reality_list.txt
+          grep -iv "reality" all_configs.txt > others_list.txt || touch others_list.txt
+
+          # تابع تست سلامت
+          check_and_add() {
+            while IFS= read -r line; do
+              [ $COUNT -ge $MAX_CONFIGS ] && break
+              host=$(echo "$line" | sed -E 's/.*@([^:]+).*/\1/' | cut -d':' -f1 | cut -d'?' -f1 | cut -d'/' -f1)
+              if timeout 1.5s nc -zw 1 "$host" 443 > /dev/null 2>&1; then
+                echo "$line" >> configs/alive.txt
+                COUNT=$((COUNT + 1))
+              fi
+            done < "$1"
+          }
+
+          # اولویت اول: تست ریالیتی‌ها
+          echo "Processing Reality configs..."
+          check_and_add reality_list.txt
+
+          # اولویت دوم: اگر جا بود، تست بقیه پروتکل‌ها
+          echo "Processing other configs..."
+          check_and_add others_list.txt
+
+          echo "Total $COUNT healthy configs added (Reality prioritized)."
+
+      - name: Generate Base64 Subscription
+        run: |
+          if [ -s configs/alive.txt ]; then
+            base64 -w 0 configs/alive.txt > configs/sub.txt
+          else
+            echo "No configs found" | base64 > configs/sub.txt
+          fi
 
       - name: Commit and Push
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add configs/
-          # فقط اگر تغییری وجود داشت کامیت کن
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update configs: $(date +'%Y-%m-%d')" && git push)
+          git add .
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update: Reality Priority - Found $COUNT configs" && git push)
