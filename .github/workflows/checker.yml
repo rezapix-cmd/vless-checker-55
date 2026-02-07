@@ -2,8 +2,8 @@ name: Auto VLESS Reality Prioritizer
 
 on:
   schedule:
-    - cron: '0 */6 * * *' # هر 6 ساعت یکبار خودکار اجرا می‌شود
-  workflow_dispatch:      # قابلیت اجرای دستی
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -23,7 +23,6 @@ jobs:
 
       - name: Fetch & Merge Configs
         run: |
-          # لیست منابع گسترده‌تر برای جمع‌آوری کانفیگ
           SOURCES=(
             "https://raw.githubusercontent.com/MatinGhanbari/v2ray-configs/main/subscriptions/vless/reality"
             "https://raw.githubusercontent.com/barry-far/V2ray-Config/main/Sub1.txt"
@@ -32,47 +31,37 @@ jobs:
             "https://raw.githubusercontent.com/yebekhe/TVC/main/subscriptions/protocols/vless"
             "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/sub/sub_merge.txt"
           )
-          
           > all_configs.txt
           for url in "${SOURCES[@]}"; do
-            echo "Fetching from $url..."
             curl -s --max-time 15 "$url" >> all_configs.txt || true
           done
-          
-          # فقط پروتکل‌های استاندارد را نگه دار و تکراری‌ها را حذف کن
           grep -E "vless://|vmess://|trojan://|ss://" all_configs.txt | sort -u > temp.txt && mv temp.txt all_configs.txt
 
-      - name: Priority Quality Check (Reality First)
+      - name: Priority Quality Check
         run: |
           > configs/alive.txt
           COUNT=0
           MAX_CONFIGS=100
           
-          # جدا سازی لینک‌ها بر اساس کلمه reality
           grep -i "reality" all_configs.txt > reality_list.txt || touch reality_list.txt
           grep -iv "reality" all_configs.txt > others_list.txt || touch others_list.txt
 
           check_and_add() {
+            TYPE=$2
             while IFS= read -r line; do
               [ $COUNT -ge $MAX_CONFIGS ] && break
-              # استخراج آدرس سرور
               host=$(echo "$line" | sed -E 's/.*@([^:]+).*/\1/' | cut -d':' -f1 | cut -d'?' -f1 | cut -d'/' -f1)
-              
-              # تست اتصال با مهلت 2.5 ثانیه برای پیدا کردن تعداد بیشتر
               if timeout 2.5s nc -zw 2 "$host" 443 > /dev/null 2>&1; then
-                echo "$line" >> configs/alive.txt
+                # شماره‌گذاری و تمیز کردن نام کانفیگ برای نمایش بهتر در استریسند
+                CLEAN_LINE=$(echo "$line" | sed -E "s/#.*/#${TYPE}-$(printf "%02d" $((COUNT+1)))/")
+                echo "$CLEAN_LINE" >> configs/alive.txt
                 COUNT=$((COUNT + 1))
               fi
             done < "$1"
           }
 
-          echo "بررسی کانفیگ‌های ریالیتی..."
-          check_and_add reality_list.txt
-
-          echo "بررسی سایر پروتکل‌ها برای تکمیل ظرفیت..."
-          check_and_add others_list.txt
-
-          echo "در مجموع $COUNT کانفیگ سالم پیدا شد."
+          check_and_add reality_list.txt "Reality"
+          check_and_add others_list.txt "Config"
 
       - name: Generate Base64 Subscription
         run: |
@@ -87,4 +76,4 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update: $(date +'%Y-%m-%d %H:%M') - Found $COUNT configs" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update: Found $COUNT configs" && git push)
