@@ -2,8 +2,8 @@ name: Auto VLESS Reality Prioritizer
 
 on:
   schedule:
-    - cron: '0 */6 * * *'
-  workflow_dispatch:
+    - cron: '0 */6 * * *' # هر 6 ساعت یکبار خودکار اجرا می‌شود
+  workflow_dispatch:      # قابلیت اجرای دستی
 
 jobs:
   build:
@@ -23,20 +23,23 @@ jobs:
 
       - name: Fetch & Merge Configs
         run: |
-          # لیست منابع (اضافه کردن منابع عمومی برای پروتکل‌های مختلف)
+          # لیست منابع گسترده‌تر برای جمع‌آوری کانفیگ
           SOURCES=(
             "https://raw.githubusercontent.com/MatinGhanbari/v2ray-configs/main/subscriptions/vless/reality"
             "https://raw.githubusercontent.com/barry-far/V2ray-Config/main/Sub1.txt"
             "https://raw.githubusercontent.com/10ium/free-sub-link/main/config-fetcher/vless"
             "https://raw.githubusercontent.com/Iranian-V2Ray/V2Ray-Configs/main/All_Configs_Sub.txt"
+            "https://raw.githubusercontent.com/yebekhe/TVC/main/subscriptions/protocols/vless"
+            "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/sub/sub_merge.txt"
           )
           
           > all_configs.txt
           for url in "${SOURCES[@]}"; do
-            curl -s --max-time 10 "$url" >> all_configs.txt || true
+            echo "Fetching from $url..."
+            curl -s --max-time 15 "$url" >> all_configs.txt || true
           done
           
-          # تمیزکاری: حذف تکراری‌ها و فقط نگه داشتن پروتکل‌های استاندارد
+          # فقط پروتکل‌های استاندارد را نگه دار و تکراری‌ها را حذف کن
           grep -E "vless://|vmess://|trojan://|ss://" all_configs.txt | sort -u > temp.txt && mv temp.txt all_configs.txt
 
       - name: Priority Quality Check (Reality First)
@@ -45,31 +48,31 @@ jobs:
           COUNT=0
           MAX_CONFIGS=100
           
-          # جدا سازی لینک‌ها: اول ریالیتی‌ها، بعد بقیه
+          # جدا سازی لینک‌ها بر اساس کلمه reality
           grep -i "reality" all_configs.txt > reality_list.txt || touch reality_list.txt
           grep -iv "reality" all_configs.txt > others_list.txt || touch others_list.txt
 
-          # تابع تست سلامت
           check_and_add() {
             while IFS= read -r line; do
               [ $COUNT -ge $MAX_CONFIGS ] && break
+              # استخراج آدرس سرور
               host=$(echo "$line" | sed -E 's/.*@([^:]+).*/\1/' | cut -d':' -f1 | cut -d'?' -f1 | cut -d'/' -f1)
-              if timeout 1.5s nc -zw 1 "$host" 443 > /dev/null 2>&1; then
+              
+              # تست اتصال با مهلت 2.5 ثانیه برای پیدا کردن تعداد بیشتر
+              if timeout 2.5s nc -zw 2 "$host" 443 > /dev/null 2>&1; then
                 echo "$line" >> configs/alive.txt
                 COUNT=$((COUNT + 1))
               fi
             done < "$1"
           }
 
-          # اولویت اول: تست ریالیتی‌ها
-          echo "Processing Reality configs..."
+          echo "بررسی کانفیگ‌های ریالیتی..."
           check_and_add reality_list.txt
 
-          # اولویت دوم: اگر جا بود، تست بقیه پروتکل‌ها
-          echo "Processing other configs..."
+          echo "بررسی سایر پروتکل‌ها برای تکمیل ظرفیت..."
           check_and_add others_list.txt
 
-          echo "Total $COUNT healthy configs added (Reality prioritized)."
+          echo "در مجموع $COUNT کانفیگ سالم پیدا شد."
 
       - name: Generate Base64 Subscription
         run: |
@@ -84,4 +87,4 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update: Reality Priority - Found $COUNT configs" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update: $(date +'%Y-%m-%d %H:%M') - Found $COUNT configs" && git push)
