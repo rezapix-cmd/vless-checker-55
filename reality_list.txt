@@ -1,4 +1,4 @@
-trojan://qj1Dz1CJmFQRhWr1SP80aA@172.67.204.84:443?security=tls&sni=cdn-21.gsmxreality.com&type=grpc&serviceName=443trojan#%F0%9F%8F%81RELAY-172.67.204.84-1745
+trojan://qj1Dz1CJmFQRhWr1SP80aA@172.67.204.84:443?security=tls&sni=cdn-21.gsmxreality.com&type=grpc&serviceName=443trojan#%F0%9F%8F%81RELAY-172.67.204.84-1735
 vless://0642ee71-53ad-403b-a210-97782ed3d94c@at.pfvpn.cfd:1443?encryption=none&fp=chrome&pbk=asw-c8jLA8GT6tydb7teY46doPq-silOzQUFUkERxh0&security=reality&serviceName=yandex.ru&sid=80e0&sni=yandex.ru&type=grpc&headerType=none#@v2rayconfigamir 3266
 vless://0b277abf-e0d6-44d8-85c6-f6c7afc0aec5@176.97.73.155:443?encryption=none&security=reality&sni=navi.bankrate.com&fp=chrome&pbk=UT9tFQOdy54SeW_tg-XQN3QkGYoWUpO_88XFXijkrXc&sid=2da72ce6&type=tcp&headerType=none#
 vless://11beaf11-726d-4c11-8ce9-27308c1c608c@157.173.127.225:443?security=reality&encryption=none&pbk=v3EwzA9RIIh5Ndxm-gypRY6RCJhOpQ-2WO7KaH8nsC8&headerType=none&fp=random&type=tcp&sni=analytics.google.com&sid=eab26c4a32#%40meli_proxyy
