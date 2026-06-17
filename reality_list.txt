@@ -1,3 +1,0 @@
-ss://8ea0665e-dee3-418c-8822-1f70f350f2db@sw.pink-perfect.ru:443?security=reality&encryption=none&pbk=2fgsbEAn-ALVpjnE4ZTPrzaZY70vVplYwldCnslInE0&headerType=none&fp=chrome&type=tcp&flow=xtls-rprx-vision&sni=yandex.net&sid=86b80f1e713a33ad#@main_RedLine
-ss://ZoRoVpN@zorovpn.opik.net:50420?encryption=none&type=tcp&security=reality&headerType=none&sni=www.yahoo.com&fp=chrome&insecure=1&allowInsecure=1&pbk=WmB10FrLwg_rM6bDUYibXOOWv2fWGzwrz_Ju-8ld9XA&sid=d6559c964cb79d79&spx=/YlA4W4Wsr0zAd5L#🇹🇷TR-🚀@VPNine1
-trojan://qj1Dz1CJmFQRhWr1SP80aA@172.67.204.84:443?security=tls&sni=cdn-21.gsmxreality.com&type=grpc&serviceName=443trojan#%F0%9F%8F%81RELAY-172.67.204.84-1695
