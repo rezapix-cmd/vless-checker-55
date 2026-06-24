@@ -1,4 +1,4 @@
-ss://Telegram:TurboConfigs@45.74.158.191:443?encryption=none&fp=chrome&headerType=http&host=play.google.com&path=/&pbk=LBY0XERNoJ_3Rxh5dqla6JAZQQ98XuDCnO97uU5B9wY&security=reality&sid=98ed&sni=play.google.com&spx=/nM87DmBnwu8SHNY&type=#🇹🇷TR-🚀@VPNine1
+ss://Telegram:TurboConfigs@45.74.158.191:443?security=reality&encryption=none&pbk=LBY0XERNoJ_3Rxh5dqla6JAZQQ98XuDCnO97uU5B9wY&host=play.google.com&headerType=http&fp=chrome&spx=/nM87DmBnwu8SHNY&type=tcp&sni=play.google.com&sid=98ed#🇹🇷TR-🚀@VPNine1
 trojan://qj1Dz1CJmFQRhWr1SP80aA@172.67.204.84:443?security=tls&sni=cdn-21.gsmxreality.com&type=grpc&serviceName=443trojan#%F0%9F%8F%81RELAY-172.67.204.84-1929
 vless://8ca5cbd3-ec16-4728-bedc-2bc0d82f0922@217.217.244.129:443?security=reality&encryption=none&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&headerType=none&fp=firefox&type=tcp&flow=xtls-rprx-vision&sni=enterprisekitten.com&sid=6ba85179e30d4fc2#%40v2raybaaz%20%C2%B2
 vless://ae852d97-85f5-45cf-82a4-254eba345480@144.31.131.33:443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=djH9iD2QV748ocK-wPH7HvDd03lu88zHhS4G-61w6Dc&security=reality&sid=a120&sni=cdn.cdnjst.org&type=tcp#%F0%9F%8C%BB71@oneclickvpnkeys
